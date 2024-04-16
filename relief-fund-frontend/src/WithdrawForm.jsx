@@ -1,0 +1,32 @@
+import React, { useState } from "react";
+import axios from "axios";
+
+const WithdrawForm = () => {
+  const [amount, setAmount] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post("http://localhost:5000/withdraw", {
+        amount,
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="number"
+        placeholder="Amount"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+      />
+      <button type="submit">Withdraw</button>
+    </form>
+  );
+};
+
+export default WithdrawForm;

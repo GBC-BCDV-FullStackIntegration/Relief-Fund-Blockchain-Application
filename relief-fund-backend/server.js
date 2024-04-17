@@ -1,59 +1,74 @@
-require('dotenv').config();
 const express = require('express');
-const bodyParser = require('body-parser');
+const Web3 = require('web3');
 const cors = require('cors');
-const ethers = require('ethers');
-require("dotenv").config();
-const ReliefFund = require('../relief-fund-frontend/artifacts/contracts/ReliefFund.sol/ReliefFund.json');
+require('dotenv').config()
+const ReliefFundABI = require('../relief-fund-frontend/artifacts/contracts/ReliefFund.sol/ReliefFund.json');
 
 const app = express();
-app.use(cors());
-app.use(bodyParser.json());
+app.use(cors({
+    origin: '*', // Allow any origin to access the server
+    methods: 'GET,POST', // Allow GET and POST requests
+    allowedHeaders: 'Content-Type,Authorization' // Allow specified headers
+  }));
+const PORT = process.env.PORT;
 
-// Connect to Ethereum
-const provider = new ethers.providers.JsonRpcProvider(process.env.API_URL);
-const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+const web3 = new Web3(new Web3.providers.HttpProvider(process.env.API_URL)); // Update with your Ethereum node URL
+const contractAddress = '0x6FFeDD31aDd29438A6095249B7Eb5985039be808'; // Update with your deployed contract address
+const reliefFundContract = new web3.eth.Contract(ReliefFundABI.abi, contractAddress);
 
-// Replace with your contract's ABI and address
+app.use(express.json());
 
-const contractAddress = '0x0cc2BC845c8BDeCfd771cdE51Ac9B6Ae5cE47931'; // Your contract's deployed address
-const contract = new ethers.Contract(contractAddress, ReliefFund.abi, wallet);
+app.get('/totalDonations', async (req, res) => {
+    try {
+      const totalDonations = await reliefFundContract.methods.totalDonations().call();
+      res.json({ totalDonations: web3.utils.fromWei(totalDonations.toString(), 'ether') });
+      
+    } catch (error) {
+      console.error('Error getting total donations:', error);
+      res.status(500).json({ error: 'Failed to get total donations' });
+    }
+  });
+  
+  app.get('/donations', async (req, res) => {
+    try {
+      const donationsCount = await reliefFundContract.methods.getDonationsCount().call();
+      const donations = [];
+  
+      for (let i = 0; i < donationsCount; i++) {
+        const donation = await reliefFundContract.methods.getDonation(i).call();
+        donations.push({
+          donor: donation[0],
+          amount: web3.utils.fromWei(donation[1].toString(), 'ether'),
+          description: donation[2],
+        });
+      }
+  
+      res.json({ donations });
+    } catch (error) {
+      console.error('Error getting donations:', error);
+      res.status(500).json({ error: 'Failed to get donations' });
+    }
+  });
+  
 
-// Example route to donate
-app.post('/donate', async (req, res) => {
- try {
-    const { description, amount } = req.body;
-    const donationAmount = ethers.utils.parseEther(amount);
-    const tx = await contract.donate(description, { value: donationAmount });
-    await tx.wait();
-    res.json({ message: 'Donation successful', txHash: tx.hash });
- } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to donate' });
- }
-});
-
-// Example route to withdraw funds
 app.post('/withdraw', async (req, res) => {
- try {
-    const { amount } = req.body;
-    console.log("amount: ",amount)
-    const withdrawalAmount = ethers.utils.parseEther(amount);
-    console.log("WA:", withdrawalAmount)
-    const tx = await contract.withdraw(withdrawalAmount);
-    await tx.wait();
-    res.json({ message: 'Withdrawal successful', txHash: tx.hash });
- } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to withdraw' });
- }
+    const { fromAddress } = req.body;
+  
+    const accounts = await web3.eth.getAccounts();
+    const account = fromAddress || accounts[0];
+  
+    try {
+      const result = await reliefFundContract.methods.withdraw().send({
+        from: account,
+      });
+  
+      res.json({ transactionHash: result.transactionHash });
+    } catch (error) {
+      console.error('Error withdrawing:', error);
+      res.status(500).json({ error: 'Failed to withdraw' });
+    }
+  });
+
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
-
-app.get("/balance", async (req, res) => {
-   const contractAddress = "0x0cc2BC845c8BDeCfd771cdE51Ac9B6Ae5cE47931"; // Replace with your contract address
-   const balance = await web3.eth.getBalance(contractAddress);
-   res.json({ balance: web3.utils.fromWei(balance, "ether") });
- });
-
-const PORT = 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

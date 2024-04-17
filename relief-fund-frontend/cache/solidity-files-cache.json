@@ -1,14 +1,13 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "/project/CED/Relief-Fund-Blockchain-Application/relief-fund-frontend/contracts/ReliefFund.sol": {
-      "lastModificationDate": 1713261595921,
-      "contentHash": "c38021dd52b95f43f9c6caf3a628c905",
+    "/project/CED/Relief-Fund-Blockchain-Application/new/relief-fund-frontend/contracts/ReliefFund.sol": {
+      "lastModificationDate": 1713321397361,
+      "contentHash": "582c8908c3edc405a9d34c19870f5856",
       "sourceName": "contracts/ReliefFund.sol",
       "solcConfig": {
-        "version": "0.8.24",
+        "version": "0.8.0",
         "settings": {
-          "evmVersion": "paris",
           "optimizer": {
             "enabled": false,
             "runs": 200

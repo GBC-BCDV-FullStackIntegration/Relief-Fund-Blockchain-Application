@@ -5,9 +5,9 @@ require("dotenv").config();
 const { API_URL, PRIVATE_KEY } = process.env;
 
 module.exports = {
-  solidity: "0.8.24",
+  solidity: "0.8.0",
   paths: {
-    artifacts: "./src/artifacts",
+    artifacts: "./artifacts",
   },
   networks: {
     sepolia: {

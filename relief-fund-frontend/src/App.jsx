@@ -4,6 +4,7 @@ import axios from "axios";
 import { ethers } from "ethers";
 import ReliefFundABI from "../artifacts/contracts/ReliefFund.sol/ReliefFund.json";
 
+// Material UI components
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Table from "@mui/material/Table";
@@ -15,15 +16,18 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
 function App() {
-  const [account, setAccount] = useState("");
-  const [amount, setAmount] = useState("");
-  const [description, setDescription] = useState("");
-  const [totalDonations, setTotalDonations] = useState(0);
-  const [donations, setDonations] = useState([]);
-  const [provider, setProvider] = useState(null);
+  // State variables
+  const [account, setAccount] = useState(""); // Connected MetaMask account
+  const [amount, setAmount] = useState(""); // Amount to donate
+  const [description, setDescription] = useState(""); // Description of the donation
+  const [totalDonations, setTotalDonations] = useState(0); // Total donations in ETH
+  const [donations, setDonations] = useState([]); // List of donations
+  const [provider, setProvider] = useState(null); // Ethereum provider
 
+  // Deployed ReliefFund contract address
   const reliefFundAddress = "0x6FFeDD31aDd29438A6095249B7Eb5985039be808";
 
+  // Effect hook to initialize Ethereum provider and listen for account changes
   useEffect(() => {
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -39,6 +43,7 @@ function App() {
     }
   }, []);
 
+  // Function to fetch total donations from the backend
   const fetchTotalDonations = async () => {
     try {
       const response = await axios.get("http://localhost:3001/totalDonations");
@@ -48,6 +53,7 @@ function App() {
     }
   };
 
+  // Function to fetch all donations from the backend
   const fetchDonations = async () => {
     try {
       const response = await axios.get("http://localhost:3001/donations");
@@ -57,6 +63,7 @@ function App() {
     }
   };
 
+  // Function to connect MetaMask wallet
   const connectMetaMask = async () => {
     if (window.ethereum) {
       try {
@@ -74,14 +81,19 @@ function App() {
     }
   };
 
+  // Function to donate to the relief fund
   const donate = async () => {
+    // Check if MetaMask is connected
     if (!account) {
       console.error("Please connect MetaMask");
       return;
     }
 
+    // Convert the donation amount from ether to wei
     const amountInEther = parseFloat(amount);
     const amountInWei = ethers.utils.parseEther(amountInEther.toString());
+    
+    // Create a new instance of the relief fund contract
     const reliefFundContract = new ethers.Contract(
       reliefFundAddress,
       ReliefFundABI.abi,
@@ -89,6 +101,7 @@ function App() {
     );
 
     try {
+      // Call the donate function of the relief fund contract
       const tx = await reliefFundContract.donate(description, {
         value: amountInWei,
       });
@@ -103,12 +116,15 @@ function App() {
     }
   };
 
+  // Function to withdraw funds from the relief fund
   const withdraw = async () => {
+    // Check if MetaMask is connected
     if (!account) {
       console.error("Please connect MetaMask");
       return;
     }
 
+    // Create a new instance of the relief fund contract
     const reliefFundContract = new ethers.Contract(
       reliefFundAddress,
       ReliefFundABI.abi,
@@ -116,9 +132,11 @@ function App() {
     );
 
     try {
+       // Call the withdraw function of the relief fund contract
       const tx = await reliefFundContract.withdraw();
       await tx.wait();
       console.log("Withdrawal successful");
+      // Fetch the updated total donations and donations list
       fetchTotalDonations();
       fetchDonations();
     } catch (error) {
@@ -187,17 +205,6 @@ function App() {
           </TableBody>
         </Table>
       </TableContainer>
-
-      {/* <ul>
-        {donations &&
-          donations.map((donation, index) => (
-            <li key={index}>
-              <p>Donor: {donation.donor}</p>
-              <p>Amount: {donation.amount} ETH</p>
-              <p>Description: {donation.description}</p>
-            </li>
-          ))}
-      </ul> */}
     </div>
   );
 }

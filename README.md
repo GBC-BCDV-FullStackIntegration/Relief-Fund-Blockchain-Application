@@ -47,4 +47,8 @@ Start the server
 ```bash
   npm start
 ```
-
+## Network details
+```
+Contract Address: 0x6FFeDD31aDd29438A6095249B7Eb5985039be808
+Network Name: Sepolia
+```

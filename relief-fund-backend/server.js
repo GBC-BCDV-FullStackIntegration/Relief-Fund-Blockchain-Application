@@ -4,7 +4,7 @@ const cors = require('cors');
 require('dotenv').config()
 
 // Contract ABI
-const ReliefFundABI = require('../relief-fund-frontend/artifacts/contracts/ReliefFund.sol/ReliefFund.json');
+const ReliefFundABI = require('./ReliefFund.json');
 
 // Initializing Express Application
 const app = express();
@@ -16,10 +16,10 @@ app.use(cors({
     allowedHeaders: 'Content-Type,Authorization' // Allow specified headers
   }));
 
-const PORT = process.env.PORT;
+const PORT = 3001;
 
 // Ethereum node URL
-const web3 = new Web3(new Web3.providers.HttpProvider(process.env.API_URL));
+const web3 = new Web3(new Web3.providers.HttpProvider(process.env.ALCHEMY_API_KEY));
 
 // Deployed contract address
 const contractAddress = '0x6FFeDD31aDd29438A6095249B7Eb5985039be808';

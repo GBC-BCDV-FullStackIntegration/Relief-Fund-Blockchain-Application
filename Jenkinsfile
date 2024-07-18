@@ -6,7 +6,9 @@ pipeline {
     ACR_LOGIN_SERVER = 'gbcfullstack.azurecr.io'
     ACR_CREDENTIALS_ID = 'acr-credentials'
     DOCKER_IMAGE_NAME = "${env.ACR_LOGIN_SERVER}/relief-fund-dapp"
-    AZURE_CREDENTIALS = credentials('azure-service-principal')
+    AZURE_CLIENT_ID = credentials('azure-service-principal').id
+    AZURE_CLIENT_SECRET = credentials('azure-service-principal').password
+    AZURE_TENANT_ID = credentials('azure-service-principal').tenantId
     ALCHEMY_API_KEY = credentials('alchemy-api-key')
     RESOURCE_GROUP = 'myResourceGroup'
     AKS_CLUSTER_NAME = 'myAKSCluster'
@@ -50,15 +52,14 @@ pipeline {
     }
     stage('Configure Azure CLI') {
       steps {
-        withCredentials([usernamePassword(credentialsId: 'azure-service-principal', usernameVariable: 'AZURE_CLIENT_ID', passwordVariable: 'AZURE_CLIENT_SECRET')]) {
-          script {
-            sh '''
-              az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
-              az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER_NAME
-            '''
-          }
+        script {
+          sh '''
+            az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID}
+            az aks get-credentials --resource-group ${RESOURCE_GROUP} --name ${AKS_CLUSTER_NAME}
+          '''
         }
       }
+
     }
     stage('Create ConfigMap') {
       steps {

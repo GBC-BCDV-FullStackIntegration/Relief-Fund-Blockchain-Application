@@ -52,22 +52,25 @@ pipeline {
         steps {
             script {
                 sh '''
-                    curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-                    '''
-                }
+                    curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+                    export PATH=$PATH:$HOME/bin
+                    az --version
+                '''
             }
         }
-    stage('Configure Azure CLI') {
-      steps {
-        script {
-          sh '''
-            az login --service-principal -u ${AZURE_CREDS_USR} -p ${AZURE_CREDS_PSW} --tenant ${AZURE_CREDS_TENANTID}
-            az aks get-credentials --resource-group ${RESOURCE_GROUP} --name ${AKS_CLUSTER_NAME}
-            '''
-        }
-      }
-
     }
+    stage('Configure Azure CLI') {
+        steps {
+            script {
+                sh '''
+                    export PATH=$PATH:$HOME/bin
+                    az --version
+                    az login --service-principal -u ${AZURE_CREDS_USR} -p ${AZURE_CREDS_PSW} --tenant ${AZURE_CREDS_TENANTID}
+                    az aks get-credentials --resource-group ${RESOURCE_GROUP} --name ${AKS_CLUSTER_NAME}
+                '''
+            }
+        }
+}
     stage('Create ConfigMap') {
       steps {
         script {

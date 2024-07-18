@@ -50,8 +50,8 @@ environment {
                 set -e
                 mkdir -p /tmp/.azure /tmp/.kube /tmp/bin
                 
-                echo "Installing curl and unzip..."
-                apt-get update && apt-get install -y curl unzip
+                echo "Installing wget and unzip..."
+                apt-get update && apt-get install -y wget unzip
                 
                 echo "Azure CLI version:"
                 az --version
@@ -63,15 +63,14 @@ environment {
                 az aks get-credentials --resource-group ${RESOURCE_GROUP} --name ${AKS_CLUSTER_NAME} --file ${KUBECONFIG}
                 
                 echo "Downloading kubectl..."
-                KUBECTL_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
-                curl -LO "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
-                chmod +x kubectl
-                mv kubectl /tmp/bin/kubectl
+                KUBECTL_VERSION=$(wget -qO- https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+                wget -O /tmp/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+                chmod +x /tmp/bin/kubectl
                 
                 echo "Downloading kubelogin..."
                 KUBELOGIN_VERSION="v0.1.4"
-                curl -LO "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip"
-                unzip kubelogin-linux-amd64.zip -d /tmp/bin
+                wget -O /tmp/bin/kubelogin.zip "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip"
+                unzip /tmp/bin/kubelogin.zip -d /tmp/bin
                 chmod +x /tmp/bin/kubelogin
                 
                 echo "PATH: $PATH"

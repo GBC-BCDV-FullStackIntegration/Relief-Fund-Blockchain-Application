@@ -79,14 +79,14 @@ environment {
                 ls -la /tmp/bin
                 
                 echo "Creating ConfigMap..."
-                kubectl create configmap alchemy-config --from-literal=ALCHEMY_API_KEY=$ALCHEMY_API_KEY -o yaml --dry-run=client | kubectl apply -f -
+                /tmp/bin/kubectl create configmap alchemy-config --from-literal=ALCHEMY_API_KEY=$ALCHEMY_API_KEY -o yaml --dry-run=client | /tmp/bin/kubectl apply -f -
                 
                 echo "Applying Kubernetes manifests..."
-                kubectl apply -f kubernetes/deployment.yaml
-                kubectl apply -f kubernetes/ingress.yaml
-                kubectl apply -f kubernetes/monitoring/prometheus-config.yaml
-                kubectl apply -f kubernetes/monitoring/prometheus-deployment.yaml
-                kubectl apply -f kubernetes/monitoring/grafana-deployment.yaml
+                /tmp/bin/kubectl apply -f kubernetes/deployment.yaml
+                /tmp/bin/kubectl apply -f kubernetes/ingress.yaml
+                /tmp/bin/kubectl apply -f kubernetes/monitoring/prometheus-config.yaml
+                /tmp/bin/kubectl apply -f kubernetes/monitoring/prometheus-deployment.yaml
+                /tmp/bin/kubectl apply -f kubernetes/monitoring/grafana-deployment.yaml
                 '''
             }
             }

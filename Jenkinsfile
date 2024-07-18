@@ -50,8 +50,8 @@ environment {
                 set -e
                 mkdir -p /tmp/.azure /tmp/.kube /tmp/bin
                 
-                echo "Installing curl..."
-                apt-get update && apt-get install -y curl
+                echo "Installing wget..."
+                apt-get update && apt-get install -y wget
                 
                 echo "Azure CLI version:"
                 az --version
@@ -63,14 +63,14 @@ environment {
                 az aks get-credentials --resource-group ${RESOURCE_GROUP} --name ${AKS_CLUSTER_NAME} --file ${KUBECONFIG}
                 
                 echo "Downloading kubectl..."
-                KUBECTL_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
-                curl -Lo /tmp/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+                KUBECTL_VERSION=$(wget -qO- https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+                wget -O /tmp/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
                 sudo chmod +x /tmp/bin/kubectl
                 kubectl version --client
                 
                 echo "Downloading kubelogin..."
-                KUBELOGIN_VERSION=$(curl -s https://api.github.com/repos/Azure/kubelogin/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\\1/')
-                curl -Lo /tmp/bin/kubelogin.zip "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip"
+                KUBELOGIN_VERSION=$(wget -qO- https://api.github.com/repos/Azure/kubelogin/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\\1/')
+                wget -O /tmp/bin/kubelogin.zip "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip"
                 unzip /tmp/bin/kubelogin.zip -d /tmp/bin
                 sudo mv /tmp/bin/bin/linux_amd64/kubelogin /tmp/bin/kubelogin
                 sudo chmod +x /tmp/bin/kubelogin

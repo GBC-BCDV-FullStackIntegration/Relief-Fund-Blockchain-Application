@@ -44,22 +44,27 @@ environment {
             withEnv([
                 "AZURE_CONFIG_DIR=/tmp/.azure",
                 "KUBECONFIG=/tmp/.kube/config",
-                "PATH=/tmp/bin:$PATH"
+                "PATH=/tmp/bin:$PATH",
+                "AZURE_KUBERNETES_SERVICE_DISABLE_KUBELOGIN=true"
             ]) {
                 sh '''
                 set -e
                 mkdir -p /tmp/.azure /tmp/.kube /tmp/bin
                 
+                echo "Azure CLI version:"
                 az --version
+                
+                echo "Logging in to Azure..."
                 az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+                
+                echo "Getting AKS credentials..."
                 az aks get-credentials --resource-group ${RESOURCE_GROUP} --name ${AKS_CLUSTER_NAME} --file ${KUBECONFIG}
                 
-                # Install kubectl
                 echo "Installing kubectl..."
                 az aks install-cli --install-location /tmp/bin/kubectl
+                chmod +x /tmp/bin/kubectl
                 kubectl version --client
                 
-                # Install kubelogin manually
                 echo "Installing kubelogin..."
                 KUBELOGIN_VERSION=$(curl -s https://api.github.com/repos/Azure/kubelogin/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\\1/')
                 curl -Lo /tmp/bin/kubelogin.zip "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip"
@@ -69,12 +74,13 @@ environment {
                 chmod +x /tmp/bin/kubelogin
                 
                 echo "PATH: $PATH"
+                echo "Contents of /tmp/bin:"
                 ls -la /tmp/bin
                 
-                # Create ConfigMap
+                echo "Creating ConfigMap..."
                 kubectl create configmap alchemy-config --from-literal=ALCHEMY_API_KEY=$ALCHEMY_API_KEY -o yaml --dry-run=client | kubectl apply -f -
                 
-                # Apply Kubernetes manifests
+                echo "Applying Kubernetes manifests..."
                 kubectl apply -f kubernetes/deployment.yaml
                 kubectl apply -f kubernetes/ingress.yaml
                 kubectl apply -f kubernetes/monitoring/prometheus-config.yaml

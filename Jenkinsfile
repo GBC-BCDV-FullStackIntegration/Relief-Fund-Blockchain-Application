@@ -14,10 +14,16 @@ pipeline {
 
   stages {
     stage('Clone Repository') {
-      steps {
-        git 'https://github.com/GBC-BCDV-FullStackIntegration/Relief-Fund-Blockchain-Application'
-      }
+        steps {
+            checkout([$class: 'GitSCM', 
+                    branches: [[name: 'main']], 
+                    doGenerateSubmoduleConfigurations: false, 
+                    extensions: [], 
+                    submoduleCfg: [], 
+                    userRemoteConfigs: [[url: 'https://github.com/GBC-BCDV-FullStackIntegration/Relief-Fund-Blockchain-Application.git']]])
+        }
     }
+
     stage('Build Backend') {
       steps {
         script {

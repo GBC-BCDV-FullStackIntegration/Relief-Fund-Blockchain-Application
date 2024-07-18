@@ -23,6 +23,8 @@ spec:
             configMapKeyRef:
               name: alchemy-config
               key: ALCHEMY_API_KEY
+      imagePullSecrets:
+      - name: acr-credentials
 ---
 apiVersion: v1
 kind: Service
@@ -56,6 +58,8 @@ spec:
         image: gbcfullstack.azurecr.io/frontend:latest
         ports:
         - containerPort: 80
+      imagePullSecrets:
+      - name: acr-credentials
 ---
 apiVersion: v1
 kind: Service

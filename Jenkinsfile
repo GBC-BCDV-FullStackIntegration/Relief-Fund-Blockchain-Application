@@ -34,31 +34,32 @@ pipeline {
       }
     }
 
-stage('Deploy to AKS') {
-  steps {
-    script {
-      docker.image('mcr.microsoft.com/azure-cli').inside('--entrypoint=""') {
-        sh """
-          set -e
-          az --version
-          az login --service-principal -u ${AZURE_CREDS_USR} -p ${AZURE_CREDS_PSW} --tenant ${AZURE_CREDS_TENANTID}
-          az aks get-credentials --resource-group ${RESOURCE_GROUP} --name ${AKS_CLUSTER_NAME}
-          
-          # Install kubectl
-          az aks install-cli
-          
-          # Create ConfigMap
-          kubectl create configmap alchemy-config --from-literal=ALCHEMY_API_KEY=${ALCHEMY_API_KEY} -o yaml --dry-run=client | kubectl apply -f -
-          
-          # Apply Kubernetes manifests
-          kubectl apply -f kubernetes/deployment.yaml
-          kubectl apply -f kubernetes/ingress.yaml
-          kubectl apply -f kubernetes/monitoring/prometheus-config.yaml
-          kubectl apply -f kubernetes/monitoring/prometheus-deployment.yaml
-          kubectl apply -f kubernetes/monitoring/grafana-deployment.yaml
-        """
-      }
+    stage('Deploy to AKS') {
+    steps {
+        script {
+        docker.image('mcr.microsoft.com/azure-cli').inside('--entrypoint=""') {
+            sh """
+            set -e
+            az --version
+            az login --service-principal -u ${AZURE_CREDS_USR} -p ${AZURE_CREDS_PSW} --tenant ${AZURE_CREDS_TENANTID}
+            az aks get-credentials --resource-group ${RESOURCE_GROUP} --name ${AKS_CLUSTER_NAME}
+            
+            # Install kubectl
+            az aks install-cli
+            
+            # Create ConfigMap
+            kubectl create configmap alchemy-config --from-literal=ALCHEMY_API_KEY=${ALCHEMY_API_KEY} -o yaml --dry-run=client | kubectl apply -f -
+            
+            # Apply Kubernetes manifests
+            kubectl apply -f kubernetes/deployment.yaml
+            kubectl apply -f kubernetes/ingress.yaml
+            kubectl apply -f kubernetes/monitoring/prometheus-config.yaml
+            kubectl apply -f kubernetes/monitoring/prometheus-deployment.yaml
+            kubectl apply -f kubernetes/monitoring/grafana-deployment.yaml
+            """
+        }
+        }
+    }
     }
   }
-}
 }

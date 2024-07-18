@@ -33,39 +33,44 @@ environment {
       }
     }
 
-stage('Deploy to AKS') {
-  steps {
-    withCredentials([
-      azureServicePrincipal('azure-service-principal'),
-      string(credentialsId: 'alchemy-api-key', variable: 'ALCHEMY_API_KEY')
-    ]) {
-      script {
-        docker.image('mcr.microsoft.com/azure-cli').inside('--entrypoint=""') {
-          withEnv(["AZURE_CONFIG_DIR=/tmp/.azure"]) {
-            sh '''
-              set -e
-              az --version
-              az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
-              az aks get-credentials --resource-group ${RESOURCE_GROUP} --name ${AKS_CLUSTER_NAME}
-              
-              # Install kubectl
-              az aks install-cli
-              
-              # Create ConfigMap
-              kubectl create configmap alchemy-config --from-literal=ALCHEMY_API_KEY=$ALCHEMY_API_KEY -o yaml --dry-run=client | kubectl apply -f -
-              
-              # Apply Kubernetes manifests
-              kubectl apply -f kubernetes/deployment.yaml
-              kubectl apply -f kubernetes/ingress.yaml
-              kubectl apply -f kubernetes/monitoring/prometheus-config.yaml
-              kubectl apply -f kubernetes/monitoring/prometheus-deployment.yaml
-              kubectl apply -f kubernetes/monitoring/grafana-deployment.yaml
-            '''
-          }
+    stage('Deploy to AKS') {
+    steps {
+        withCredentials([
+        azureServicePrincipal('azure-service-principal'),
+        string(credentialsId: 'alchemy-api-key', variable: 'ALCHEMY_API_KEY')
+        ]) {
+        script {
+            docker.image('mcr.microsoft.com/azure-cli').inside('--entrypoint=""') {
+            withEnv([
+                "AZURE_CONFIG_DIR=/tmp/.azure",
+                "KUBECONFIG=/tmp/.kube/config"
+            ]) {
+                sh '''
+                set -e
+                mkdir -p /tmp/.azure /tmp/.kube
+                az --version
+                az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+                az aks get-credentials --resource-group ${RESOURCE_GROUP} --name ${AKS_CLUSTER_NAME} --file ${KUBECONFIG}
+                
+                # Install kubectl
+                az aks install-cli --install-location /tmp/kubectl
+                export PATH=$PATH:/tmp
+                
+                # Create ConfigMap
+                kubectl create configmap alchemy-config --from-literal=ALCHEMY_API_KEY=$ALCHEMY_API_KEY -o yaml --dry-run=client | kubectl apply -f -
+                
+                # Apply Kubernetes manifests
+                kubectl apply -f kubernetes/deployment.yaml
+                kubectl apply -f kubernetes/ingress.yaml
+                kubectl apply -f kubernetes/monitoring/prometheus-config.yaml
+                kubectl apply -f kubernetes/monitoring/prometheus-deployment.yaml
+                kubectl apply -f kubernetes/monitoring/grafana-deployment.yaml
+                '''
+            }
+            }
         }
-      }
+        }
     }
-  }
-}
+    }
   }
 }

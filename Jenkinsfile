@@ -6,9 +6,7 @@ pipeline {
     ACR_LOGIN_SERVER = 'gbcfullstack.azurecr.io'
     ACR_CREDENTIALS_ID = 'acr-credentials'
     DOCKER_IMAGE_NAME = "${env.ACR_LOGIN_SERVER}/relief-fund-dapp"
-    AZURE_CLIENT_ID = credentials('azure-service-principal').id
-    AZURE_CLIENT_SECRET = credentials('azure-service-principal').password
-    AZURE_TENANT_ID = credentials('azure-service-principal').tenantId
+    AZURE_CREDS = credentials('azure-service-principal')
     ALCHEMY_API_KEY = credentials('alchemy-api-key')
     RESOURCE_GROUP = 'myResourceGroup'
     AKS_CLUSTER_NAME = 'myAKSCluster'
@@ -54,9 +52,9 @@ pipeline {
       steps {
         script {
           sh '''
-            az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID}
+            az login --service-principal -u ${AZURE_CREDS_USR} -p ${AZURE_CREDS_PSW} --tenant ${AZURE_CREDS_TENANTID}
             az aks get-credentials --resource-group ${RESOURCE_GROUP} --name ${AKS_CLUSTER_NAME}
-          '''
+            '''
         }
       }
 

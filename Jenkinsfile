@@ -71,6 +71,7 @@ environment {
                 KUBELOGIN_VERSION="v0.1.4"
                 wget -O /tmp/bin/kubelogin.zip "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip"
                 unzip /tmp/bin/kubelogin.zip -d /tmp/bin
+                mv /tmp/bin/bin/linux_amd64/kubelogin /tmp/bin/kubelogin
                 chmod +x /tmp/bin/kubelogin
                 
                 echo "PATH: $PATH"

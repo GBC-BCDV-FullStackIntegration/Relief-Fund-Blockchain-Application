@@ -48,6 +48,15 @@ pipeline {
         }
       }
     }
+    stage('Install Azure CLI') {
+        steps {
+            script {
+                sh '''
+                    curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+                    '''
+                }
+            }
+        }
     stage('Configure Azure CLI') {
       steps {
         script {

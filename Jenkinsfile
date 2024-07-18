@@ -66,7 +66,6 @@ environment {
                 KUBECTL_VERSION=$(wget -qO- https://storage.googleapis.com/kubernetes-release/release/stable.txt)
                 wget -O /tmp/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
                 chmod +x /tmp/bin/kubectl
-                kubectl version --client
                 
                 echo "Downloading kubelogin..."
                 KUBELOGIN_VERSION=$(wget -qO- https://api.github.com/repos/Azure/kubelogin/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\\1/')

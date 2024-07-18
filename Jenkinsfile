@@ -44,8 +44,7 @@ environment {
             withEnv([
                 "AZURE_CONFIG_DIR=/tmp/.azure",
                 "KUBECONFIG=/tmp/.kube/config",
-                "PATH=/tmp/bin:$PATH",
-                "AZURE_KUBERNETES_SERVICE_DISABLE_KUBELOGIN=true"
+                "PATH=/tmp/bin:$PATH"
             ]) {
                 sh '''
                 set -e
@@ -60,18 +59,18 @@ environment {
                 echo "Getting AKS credentials..."
                 az aks get-credentials --resource-group ${RESOURCE_GROUP} --name ${AKS_CLUSTER_NAME} --file ${KUBECONFIG}
                 
-                echo "Installing kubectl..."
-                az aks install-cli --install-location /tmp/bin/kubectl
-                chmod +x /tmp/bin/kubectl
+                echo "Downloading kubectl..."
+                KUBECTL_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+                curl -Lo /tmp/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+                sudo chmod +x /tmp/bin/kubectl
                 kubectl version --client
                 
-                echo "Installing kubelogin..."
+                echo "Downloading kubelogin..."
                 KUBELOGIN_VERSION=$(curl -s https://api.github.com/repos/Azure/kubelogin/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\\1/')
                 curl -Lo /tmp/bin/kubelogin.zip "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip"
                 unzip /tmp/bin/kubelogin.zip -d /tmp/bin
-                mv /tmp/bin/bin/linux_amd64/kubelogin /tmp/bin/kubelogin
-                rm -rf /tmp/bin/bin /tmp/bin/kubelogin.zip
-                chmod +x /tmp/bin/kubelogin
+                sudo mv /tmp/bin/bin/linux_amd64/kubelogin /tmp/bin/kubelogin
+                sudo chmod +x /tmp/bin/kubelogin
                 
                 echo "PATH: $PATH"
                 echo "Contents of /tmp/bin:"

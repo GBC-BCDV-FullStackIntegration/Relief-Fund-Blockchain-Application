@@ -50,6 +50,9 @@ environment {
                 set -e
                 mkdir -p /tmp/.azure /tmp/.kube /tmp/bin
                 
+                echo "Installing curl..."
+                apt-get update && apt-get install -y curl
+                
                 echo "Azure CLI version:"
                 az --version
                 

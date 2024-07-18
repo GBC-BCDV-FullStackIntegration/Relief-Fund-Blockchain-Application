@@ -40,7 +40,7 @@ environment {
         string(credentialsId: 'alchemy-api-key', variable: 'ALCHEMY_API_KEY')
         ]) {
         script {
-            docker.image('mcr.microsoft.com/azure-cli').inside('--entrypoint=""') {
+            docker.image('mcr.microsoft.com/azure-cli').inside('--user=root --entrypoint=""') {
             withEnv([
                 "AZURE_CONFIG_DIR=/tmp/.azure",
                 "KUBECONFIG=/tmp/.kube/config",
@@ -65,15 +65,15 @@ environment {
                 echo "Downloading kubectl..."
                 KUBECTL_VERSION=$(wget -qO- https://storage.googleapis.com/kubernetes-release/release/stable.txt)
                 wget -O /tmp/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
-                sudo chmod +x /tmp/bin/kubectl
+                chmod +x /tmp/bin/kubectl
                 kubectl version --client
                 
                 echo "Downloading kubelogin..."
                 KUBELOGIN_VERSION=$(wget -qO- https://api.github.com/repos/Azure/kubelogin/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\\1/')
                 wget -O /tmp/bin/kubelogin.zip "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip"
                 unzip /tmp/bin/kubelogin.zip -d /tmp/bin
-                sudo mv /tmp/bin/bin/linux_amd64/kubelogin /tmp/bin/kubelogin
-                sudo chmod +x /tmp/bin/kubelogin
+                mv /tmp/bin/bin/linux_amd64/kubelogin /tmp/bin/kubelogin
+                chmod +x /tmp/bin/kubelogin
                 
                 echo "PATH: $PATH"
                 echo "Contents of /tmp/bin:"

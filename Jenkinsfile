@@ -1,6 +1,10 @@
 pipeline {
   agent any
-
+  
+    options {
+        // Run the pipeline in a privileged container
+        docker.privilegedMode = true
+    }
   environment {
     ACR_NAME = 'gbcfullstack'
     ACR_LOGIN_SERVER = 'gbcfullstack.azurecr.io'
